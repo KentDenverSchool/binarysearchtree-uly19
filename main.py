@@ -1,3 +1,5 @@
+import unittest
+
 class Node:
     def __init__(self, keyIn, valueIn):
         self.key = keyIn
@@ -20,11 +22,11 @@ class Node:
     def getLeft(self):
         return self.left
     def setLeft(self, nodeIn):
-        self.node = nodeIn
+        self.left = nodeIn
     def getRight(self):
         return self.right
     def setRight(self, nodeIn):
-        self.node = nodeIn
+        self.right = nodeIn
 
 class BinarySearchTree:
     def __init__(self):
@@ -34,121 +36,163 @@ class BinarySearchTree:
         return self.__size(self.root)
 
     def __size(self, nodeIn):
-        if nodeIn.getLeft() == None & nodeIn.getRight() == None:
+        if nodeIn == None or nodeIn.getKey() == None:
+            return 0
+        left = nodeIn.getLeft() == None
+        right = nodeIn.getRight() == None
+        if left & right:
             return 1
-        elif nodeIn.getLeft() != None & nodeIn.getRight() == None:
-            return 1 + self.__put(nodeIn.getLeft())
-        elif nodeIn.getLeft() == None & nodeIn.getRight() != None:
-            return 1 + self.__put(nodeIn.getRight())
+        elif right:
+            return 1 + self.__size(nodeIn.getLeft())
+        elif left:
+            return 1 + self.__size(nodeIn.getRight())
         else:
-            return 1 + self.__put(nodeIn.getRight()) + self.__put(nodeIn.getLeft())
+            return 1 + self.__size(nodeIn.getRight()) + self.__size(nodeIn.getLeft())
 
     def isEmpty(self):
         return self.size() == 0
 
     def put(self, keyIn, valueIn):
         if self.root.getKey() == None:
-            print(5, self.root)
             self.root = Node(keyIn, valueIn)
         else:
             self.root = self.__put(self.root, keyIn, valueIn)
-            print(6, self.root)
-
 
     def __put(self, nodeIn, keyIn, valueIn):
-        print(1, self.root)
-        if nodeIn == None:
-            print(2, self.root)
-            nodeIn = Node(keyIn, valueIn)
+        if nodeIn == None or nodeIn.getKey() == None:
+            return Node(keyIn, valueIn)
         else:
-            if nodeIn.getKey < keyIn:
-                if nodeIn.getRight() == None:
-                    nodeIn.setRight(Node(keyIn, valueIn))
-                else:
-                    self.__put(nodeIn.getRight(), keyIn, valueIn)
-            if nodeIn.getKey > keyIn:
-                if nodeIn.getLeft() == None:
-                    nodeIn.setLeft(Node(keyIn, valueIn))
-                else:
-                    self.__put(nodeIn.getLeft(), keyIn, valueIn)
+            if keyIn > nodeIn.getKey():
+                nodeIn.setRight(self.__put(nodeIn.getRight(), keyIn, valueIn))
+            else:
+                nodeIn.setLeft(self.__put(nodeIn.getLeft(), keyIn, valueIn))
+            return nodeIn
 
-bts = BinarySearchTree()
-bts.put(1, "a")
-bts.put(2, "b")
-#print(bts.size())
-'''
-    //recursive put
-    //sets left/right or creates a new node appropriately, returns the
-    //modified node n
-    private Node<Key,Value> put(Node<Key, Value> n, Key key, Value val) {
+    def get(self, keyIn):
+        return self.__get(self.root, keyIn)
 
-    }
+    def __get(self, curNode, keyIn):
+        if curNode == None:
+            return None
+        if curNode.getKey() == keyIn:
+            return curNode.getValue()
+        elif curNode.getKey() < keyIn:
+            if curNode.getRight() == None:
+                return None
+            return self.__get(curNode.getRight(), keyIn)
+        elif curNode.getKey() > keyIn:
+            if curNode.getLeft() == None:
+                return None
+            return self.__get(curNode.getLeft(), keyIn)
 
-    //recursive get wrapper
-    public Value get(Key key) {
-        return get(root, key);
-    }
+    def contains(self, keyIn):
+        return self.get(keyIn) != None
 
-    //recursive get
-    //returns null if the key does not exist
-    private Value get(Node<Key, Value> n, Key key) {
-    }
+    def remove(self, keyIn):
+        value = self.get(keyIn)
+        self.root = self.__remove(self.root, keyIn)
+        return value
 
-    public boolean contains(Key key) {
-    }
+    def __remove(self, nodeIn, keyIn):
+        if nodeIn == None:
+            return None
+        if keyIn < nodeIn.getKey():
+            nodeIn.setLeft(self.__remove(nodeIn.getLeft(), keyIn))
+        elif keyIn > nodeIn.getKey():
+            nodeIn.setRight(self.__remove(nodeIn.getRight(), keyIn))
+        else:
+            if nodeIn.getRight() == None:
+                return nodeIn.getLeft();
+            if nodeIn.getLeft() == None:
+                return nodeIn.getRight()
+            min = self.__min(nodeIn.getRight())
+            min.setLeft(nodeIn.getLeft())
+            nodeIn = nodeIn.getRight()
+        return nodeIn
 
-    public Value remove(Key key) {
-        Value v = get(key);
-        root = remove(root, key);
-        return v;
-    }
+    def min(self):
+        return self.__min(self.root).getKey();
 
-    private Node remove(Node<Key, Value> n, Key key) {
-        if(n == null) return null;
-        int i = key.compareTo(n.getKey());
-        if( i < 0) {
-            n.setLeft(remove(n.getLeft(), key));
-        } else if(i > 0) {
-            n.setRight(remove(n.getRight(), key));
-        }else {
-            if(n.getRight() == null) return n.getLeft();
-            if(n.getLeft() == null) return n.getRight();
-            Node min = min(n.getRight());
-            min.setLeft(n.getLeft());
-            n = n.getRight();
-        }
-        n.setSize(size(n.getRight()) + size(n.getLeft()) + 1);
-        return n;
-    }
+    def __min(self, nodeIn):
+        if nodeIn.getLeft() == None:
+            return nodeIn
+        else:
+            return self.__min(nodeIn.getLeft())
 
-    public Key min() {
-        return min(root).getKey();
-    }
+    def max(self):
+        return self.__max(self.root).getKey();
 
-    //returns the node at the left most left branch of n
-    private Node<Key, Value> min(Node<Key, Value> n) {
-    }
+    def __max(self, nodeIn):
+        if nodeIn.getRight() == None:
+            return nodeIn
+        else:
+            return self.__max(nodeIn.getRight())
 
-    public Key max() {
-        return max(root).getKey();
-    }
+    def __repr__(self):
+        temp = self.toString(self.root)
+        temp = temp[0:len(temp)-2]
+        return "{" + temp + "}"
 
-    //returns the node at the right most right branch of n
-    private Node<Key, Value> max(Node<Key, Value> n) {
 
-    }
+    def toString(self, nodeIn):
+        if(nodeIn==None):
+            return ""
+        return self.toString(nodeIn.getLeft()) + str(nodeIn.getKey()) + "=" + str(nodeIn.getValue())  + ", " + self.toString(nodeIn.getRight())
 
-    public String toString() {
-        String temp = toString(root);
-        temp = temp.substring(0, temp.length()-2);
-        return "{" + temp + "}";
-    }
 
-    private String toString(Node<Key, Value> n) {
-        if(n == null) return "";
-        return toString(n.getLeft()) +
-                n.getKey() + "=" + n.getValue()  + ", " +
-                toString(n.getRight());
+class TestBST(unittest.TestCase):
+    def test_put(self):
+        bst = BinarySearchTree()
+        bst.put(1, "a")
+        bst.put(2, "b")
+        self.assertEqual(str(bst), '{1=a, 2=b}')
 
-    }
-'''
+    def test_get(self):
+        bst = BinarySearchTree()
+        bst.put(1, "a")
+        bst.put(2, "b")
+        self.assertEqual(str(bst.get(2)), 'b')
+
+    def test_size(self):
+        bst = BinarySearchTree()
+        self.assertEqual(bst.size(), 0)
+        bst.put(1, "a")
+        bst.put(2, "b")
+        self.assertEqual(bst.size(), 2)
+
+    def test_is_empty(self):
+        bst = BinarySearchTree()
+        self.assertTrue(bst.isEmpty())
+        bst.put(1, "a")
+        bst.put(2, "b")
+        self.assertFalse(bst.isEmpty())
+
+    def test_min_max(self):
+        bst = BinarySearchTree()
+        bst.put(1, "a")
+        bst.put(2, "b")
+        bst.put(0, "c")
+        self.assertEqual(bst.min(), 0)
+        self.assertEqual(bst.max(), 2)
+
+    def test_contains(self):
+        bst = BinarySearchTree()
+        bst.put(1, "a")
+        bst.put(2, "b")
+        bst.put(0, "c")
+        self.assertTrue(bst.contains(0))
+        self.assertFalse(bst.contains(-9))
+
+    def test_remove(self):
+        bst = BinarySearchTree()
+        bst.put(1, "a")
+        bst.put(2, "b")
+        bst.put(0, "c")
+        bst.put(-1, "d")
+        self.assertEqual(bst.remove(1), 'a')
+        self.assertEqual(bst.remove(0), 'c')
+        self.assertEqual(bst.remove(-1), 'd')
+        self.assertEqual(str(bst), '{2=b}')
+
+if __name__ == '__main__':
+    unittest.main()
