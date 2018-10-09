@@ -140,6 +140,19 @@ class BinarySearchTree:
             return ""
         return self.toString(nodeIn.getLeft()) + str(nodeIn.getKey()) + "=" + str(nodeIn.getValue())  + ", " + self.toString(nodeIn.getRight())
 
+def isBST(bst):
+    return(isBSTNode(bst.root))
+
+def isBSTNode(nodeIn):
+    if nodeIn.getLeft() == None and nodeIn.getRight() == None:
+        return True
+    elif nodeIn.getLeft() != None and nodeIn.getRight() == None:
+        return(nodeIn.getLeft().getKey() < nodeIn.getKey() and isBSTNode(nodeIn.getLeft()))
+    elif nodeIn.getLeft() == None and nodeIn.getRight() != None:
+        return(nodeIn.getRight().getKey() > nodeIn.getKey() and isBSTNode(nodeIn.getRight()))
+    else:
+        return(nodeIn.getLeft().getKey() < nodeIn.getKey() and nodeIn.getRight().getKey() > nodeIn.getKey() and isBSTNode(nodeIn.getLeft()) and isBSTNode(nodeIn.getRight()))
+
 
 class TestBST(unittest.TestCase):
     def test_put(self):
@@ -194,6 +207,17 @@ class TestBST(unittest.TestCase):
         self.assertEqual(bst.remove(0), 'c')
         self.assertEqual(bst.remove(-1), 'd')
         self.assertEqual(str(bst), '{2=b}')
+
+    def test_is_bst(self):
+        bst = BinarySearchTree()
+        bst.put(1, "a")
+        bst.put(2, "b")
+        bst.put(0, "c")
+        bst.put(-1, "d")
+        self.assertTrue(isBST(bst))
+        bst.root.setKey(5)
+        self.assertFalse(isBST(bst))
+
 
 if __name__ == '__main__':
     unittest.main()
